@@ -207,14 +207,18 @@ button.edit_btn_style {
 }
 
 .first_page_title_style {
+    width: 300px;
+    height: 50px;
     text-align: center;
     font-size: 40px;
     margin: 0 auto;
+    background-color:rgba(255,255,255,0.5);
+    border-radius: 5px;
 }
 
 input.input_book_title_style {
     width: 300px;
-    height: 45px;
+    height: 50px;
     font-size: 40px;
     border-width: 1px;
     text-align: center;
@@ -223,13 +227,14 @@ input.input_book_title_style {
     border-bottom-width: 1px;
     outline: none;
     background-color:rgba(0,0,0,0);
+    border-radius: 5px;
     mix-blend-mode: difference;
     color: white;
 }
 
 input.input_book_title_style:focus {
     background-color: rgba(255,255,255,1);
-    mix-blend-mode: color;
+    color: black;
 }
 
 .view_item_empty_back_style {

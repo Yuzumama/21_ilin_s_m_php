@@ -43,7 +43,7 @@
                         <label for="ID">ID</label>
                         </div>
                         <div class="controls">
-                        <input type="text" id="password" class="floatLabel" name="password">
+                        <input type="password" id="password" class="floatLabel" name="password">
                         <label for="password">Password</label>
                         </div>
                         <div id="email-block" class="controls">

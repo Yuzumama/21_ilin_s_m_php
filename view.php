@@ -1,9 +1,13 @@
 <?php
 
+include 'db_info_localhost.php';
+//include 'db_info_sakura.php';
+
 // Connect to db
 try {
     // host, 'root', '*****': Sakura server
-    $pdo = new PDO('mysql:dbname=second_php_db;charset=utf8;host=localhost', 'root', '');
+//    $pdo = new PDO('mysql:dbname=second_php_db;charset=utf8;host=localhost', 'root', '');
+    $pdo = new PDO('mysql:dbname='.getDbName().';charset=utf8;host='.getDbHost(), getDbId(), getDbPw());
 } catch (PDOException $e) {
     exit('DB_CONNECT: ' . $e->getMessage());
 }
@@ -288,6 +292,7 @@ else {
         </div>
         
         <form id="layout_form" method="post" action="write_layout.php"  enctype="multipart/form-data">
+            <input type="checkbox" id="cover_image_is_chosen" name="cover_image_is_chosen" hidden>
             <input type="file" id="cover_image_file_chooser" name="cover_image_file_chooser" hidden>
             <input type="text" name="view_book_group" value="<?=$group?>" hidden />
             <input type="text" id="book_author" name="author" value="<?php
@@ -595,6 +600,7 @@ else {
         let reader = new FileReader();
         reader.onloadend = function () {
             $("#cover_page").css("background-image", "url('" + reader.result + "')");
+            $("#cover_image_is_chosen").check();
         };
         reader.readAsDataURL(selected_cover_file);
     })
