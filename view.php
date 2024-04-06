@@ -69,6 +69,31 @@ else {
     $values = [];
 }
 
+function getItemAttr($layout_json, $item_name, $attr_name, $default_value){
+    if ($layout_json) {
+        $item_layout = $layout_json[$item_name];
+        if ($item_layout) {
+            $item_attr = $item_layout[$attr_name];
+            if ($item_attr) {
+                return $item_attr;
+            }
+        }
+    }
+    return $default_value;
+}
+
+function printOneItem($layout_json, $item_name, $id, $html_content) {
+    echo "<div id='record_".$item_name."_".$id."' class='view_record_".$item_name."_back_style' style='position: relative; left: ".getItemAttr($layout_json, $item_name, 'left', '100px')."; top: ".getItemAttr($layout_json, $item_name, 'top', '50px').";'>\n";
+    echo "  <div id='record_" . $item_name . "_rotateable_" . $id . "' class='view_record_item_rotateable_back_style' degree='" . getItemAttr($layout_json, $item_name, 'degree', 0) . "' scale='" . getItemAttr($layout_json, $item_name, 'scale', 1) . "' style='transform: rotate(" . getItemAttr($layout_json, $item_name, 'degree', 0) . "deg) scale(" . getItemAttr($layout_json, $item_name, 'scale', 1) . "'>\n";
+    echo "      <div class='view_item_empty_back_style'>\n";
+    echo "          <div id='record_".$item_name."_rotate_".$id."' class='view_item_rotate_btn_style'></div>\n";
+    echo "      </div>\n";
+    echo "      <div id='record_" . $item_name . "_drag_" . $id . "' class='record_drag_trigger_style'></div>\n";
+    echo "      " . $html_content . "\n";
+    echo "  </div>\n";
+    echo "</div>\n";
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -114,31 +139,6 @@ else {
                 </div>
             </div>
             <?php
-
-            function getItemAttr($layout_json, $item_name, $attr_name, $default_value){
-                if ($layout_json) {
-                    $item_layout = $layout_json[$item_name];
-                    if ($item_layout) {
-                        $item_attr = $item_layout[$attr_name];
-                        if ($item_attr) {
-                            return $item_attr;
-                        }
-                    }
-                }
-                return $default_value;
-            }
-
-            function printOneItem($layout_json, $item_name, $id, $html_content) {
-                echo "<div id='record_".$item_name."_".$id."' class='view_record_".$item_name."_back_style' style='position: relative; left: ".getItemAttr($layout_json, $item_name, 'left', '100px')."; top: ".getItemAttr($layout_json, $item_name, 'top', '50px').";'>\n";
-                echo "  <div id='record_" . $item_name . "_rotateable_" . $id . "' class='view_record_item_rotateable_back_style' degree='" . getItemAttr($layout_json, $item_name, 'degree', 0) . "' scale='" . getItemAttr($layout_json, $item_name, 'scale', 1) . "' style='transform: rotate(" . getItemAttr($layout_json, $item_name, 'degree', 0) . "deg) scale(" . getItemAttr($layout_json, $item_name, 'scale', 1) . "'>\n";
-                echo "      <div class='view_item_empty_back_style'>\n";
-                echo "          <div id='record_".$item_name."_rotate_".$id."' class='view_item_rotate_btn_style'></div>\n";
-                echo "      </div>\n";
-                echo "      <div id='record_" . $item_name . "_drag_" . $id . "' class='record_drag_trigger_style'></div>\n";
-                echo "      " . $html_content . "\n";
-                echo "  </div>\n";
-                echo "</div>\n";
-            }
 
             $i = 1;
             foreach ($values as $value) {
@@ -388,18 +388,23 @@ else {
         return draggable_item;
     }
 
-    function setDraggable(item_name, id) {
+    function setDraggableItem(
+        draggable_item_name, 
+        draggable_trigger_name,
+        rotate_item_name,
+        rotate_trigger_name) 
+    {
         // For draggable
-        $("#record_" + item_name + '_' + id).draggable({handle: "#record_" + item_name + '_drag_' + id });
+        $("#"+draggable_item_name).draggable({handle: "#"+draggable_trigger_name });
 
         // For rotate
-        $("#record_" + item_name + "_rotateable_" + id).draggable({
-            handle: "#record_" + item_name + '_rotate_' + id,
+        $("#"+rotate_item_name).draggable({
+            handle: "#"+rotate_trigger_name,
             opacity: 0.001,
             helper: 'clone',
             drag: function (event) {
                 var // get center of div to rotate
-                    pw = document.getElementById("record_" + item_name + "_rotateable_" + id);
+                    pw = document.getElementById(rotate_item_name);
                 pwBox = pw.getBoundingClientRect();
                 center_x = (pwBox.left + pwBox.right) / 2;
                 center_y = (pwBox.top + pwBox.bottom) / 2;
@@ -416,16 +421,31 @@ else {
                 new_size = Math.sqrt(delta_x * delta_x + delta_y * delta_y);
                 new_scale = new_size / origin_size;
 
-                $("#record_" + item_name + "_rotateable_" + id).attr('degree', (degree + 170));
-                $("#record_" + item_name + "_rotateable_" + id).attr('scale', new_scale);
+                $("#"+rotate_item_name).attr('degree', (degree + 170));
+                $("#"+rotate_item_name).attr('scale', new_scale);
 
                 var rotateCSS = 'rotate(' + (degree + 170) + 'deg) scale(' + new_scale + ')';
-                $("#record_" + item_name + "_rotateable_" + id).css({
+                $("#"+rotate_item_name).css({
                     '-moz-transform': rotateCSS,
                     '-webkit-transform': rotateCSS
                 });
             }
         });
+    }
+
+    function setDraggable(item_name, id) {
+
+        let draggable_item_name = "record_" + item_name + '_' + id;
+        let draggable_trigger_name = "record_" + item_name + '_drag_' + id;
+        let rotate_item_name = "record_" + item_name + "_rotateable_" + id;
+        let rotate_trigger_name = "record_" + item_name + '_rotate_' + id;
+
+        setDraggableItem(
+            draggable_item_name,
+            draggable_trigger_name,
+            rotate_item_name,
+            rotate_trigger_name
+        );
     }
 
     $(function () {  
