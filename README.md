@@ -39,3 +39,10 @@ Storytelling Memory Book Maker
 同じ絵本を読んでもいつも子どもから新たなフィードバックをもらい、わくわくしています。
 その大切な思い出は携帯やタッブレトでいつでも読むことができることだけではなく、作成後、実物のブックになれるようにしたいと思い、今回の作品を作りました。
 これから、ユーザーが使いやすい機能を追加していきたいと思います。
+
+参考資料：
+https://magazine.techacademy.jp/magazine/48837
+
+https://www.w3schools.com/jsref/met_win_confirm.asp
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/mix-blend-mode
