@@ -1,4 +1,7 @@
+
+
 <?php
+// Put Client's content from write.html to db
 
 include 'db_info_localhost.php';
 //include 'db_info_sakura.php';
@@ -12,6 +15,7 @@ try {
     exit('DB_CONNECT: ' . $e->getMessage());
 }
 
+// Deal with Client's photo (line 18 - line 38)
 // Get a number that will not be same as any files in before
 $num_images = 0;
 $image_counts_filename = "./images/image_counts.txt";
@@ -29,34 +33,42 @@ if(file_exists($image_counts_filename)) {
 $num_images++;
 
 // Get image info from submit form
+// 先把照片放到Server暫存 Put photo on the server temperately
 $filename = $_FILES["image_file_chooser"]["name"];
 $tempname = $_FILES["image_file_chooser"]["tmp_name"];
 $file_ext = pathinfo($filename, PATHINFO_EXTENSION);
 
-// Get text info from submit form
-$author = $_POST["author"];
-$group = $_POST["group"];
-$storybook = $_POST["storybook"];
-$child_name = $_POST["child_name"];
-$progress = $_POST["progress"];
-$child_feedback = $_POST["child_feedback"];
-$comments = $_POST["comments"];
+
 
 // New file name of image to be stored on server
+// sprintf 8=8位數
 $new_filename = "./images/" . sprintf("image_%08d", $num_images) . "." . $file_ext;
 
 // Now let's move the uploaded image into the folder: images
+// Server上的暫存檔轉換成新的檔名
 if(move_uploaded_file($tempname, $new_filename)) {
 
     // Save the new number of images to file
+    // num image +1 存檔
     $new_image_counts_json = json_encode(array("num_images" => $num_images));
     $file = fopen($image_counts_filename, "w");
     fwrite($file, $new_image_counts_json);
     fclose($file);
 
     // Move back to index.php
-//    header("Location: index.php");
+    //header("Location: index.php");
 
+    // Deal with Client's text information (line 41 - line 49)
+    // Get text info from submit form
+    $author = $_POST["author"];
+    $group = $_POST["group"];
+    $storybook = $_POST["storybook"];
+    $child_name = $_POST["child_name"];
+    $progress = $_POST["progress"];
+    $child_feedback = $_POST["child_feedback"];
+    $comments = $_POST["comments"];
+
+    // For bug check
     echo "image: " . $new_filename . "<br>";
     echo "author: " . $author . "<br>";
     echo "group: " . $group . "<br>";
@@ -67,8 +79,8 @@ if(move_uploaded_file($tempname, $new_filename)) {
     echo "comments: " . $comments . "<br>";
 
     
-
-//    $sql = "INSERT INTO `diary_table`(`book_group`, `image_filename`, `input_author`, `input_date`, `input_comment`, 'storybook_name', 'child_name', 'progress', 'child_feedback') VALUES (:book_group,:image_filename,:input_author,sysdate(),:input_comment, :storybook_name, :child_name, :progress, :child_feedback);";
+    // 把Text和image的資料存到SQL/DB
+    //    $sql = "INSERT INTO `book_page_table`(`book_group`, `image_filename`, `input_author`, `input_date`, `input_comment`, 'storybook_name', 'child_name', 'progress', 'child_feedback') VALUES (:book_group,:image_filename,:input_author,sysdate(),:input_comment, :storybook_name, :child_name, :progress, :child_feedback);";
     $sql = "INSERT INTO `diary_table`(`book_group`, `image_filename`, `input_author`, `input_date`, `input_comment`, `storybook_name`, `child_name`, `progress`, `child_feedback`) VALUES " .
                                     "(:book_group , :image_filename , :input_author , sysdate()   , :input_comment , :storybook_name , :child_name , :progress , :child_feedback)";
     $stmt = $pdo->prepare($sql);
@@ -87,8 +99,6 @@ if(move_uploaded_file($tempname, $new_filename)) {
         $error = $stmt->errorInfo();
         exit("SQL_ERROR: " . $error[2]);
     }
-    else {
-    }
 }
 else {
     echo "Failed to upload image!!";
@@ -103,6 +113,7 @@ else {
     <meta charset="utf-8" />
     <title></title>
 </head>
+<!-- Server的Write.php → Client的Write.html → Server的view.php -->
 <body>
     <form id="back_to_view_form" method="post" action="view.php">
         <input type="text" name="view_book_group" value="<?= $group ?>" hidden />

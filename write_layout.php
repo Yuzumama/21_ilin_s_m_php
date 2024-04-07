@@ -80,46 +80,61 @@ if(isset($_POST["cover_image_is_chosen"])) {
     }
 
     echo $new_filename;
+} 
+else {
+    $new_filename = "";
+}
 
-    $sql = "SELECT * FROM `book_table` WHERE book_name=:book_name";
+$cover_layout = $_POST["cover_layout_json"];
+
+// 查詢資料庫裏面有沒有這本書
+$sql = "SELECT * FROM `book_table` WHERE book_name=:book_name";
+$stmt = $pdo->prepare($sql);
+$stmt->bindValue(':book_name', $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+$status = $stmt->execute();
+
+$values = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// No record, then INSERT
+// 查詢如果沒有這本書, 就會用Insert新增這本書
+if(count($values) == 0){
+    $sql = "INSERT INTO `book_table`(`author`, `book_name`, `cover_filename`, 'cover_layout') VALUES " .
+                                   "(:author , :book_name , :cover_filename , :cover_layout)";
     $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':book_name', $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":author", $author, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":book_name", $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":cover_filename", $new_filename, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":cover_layout", $cover_layout, PDO::PARAM_STR);
+
     $status = $stmt->execute();
 
-    $values = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($status === false) {
+        //SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
+        $error = $stmt->errorInfo();
+        exit("SQL_ERROR: " . $error[2]);
+    }
+}
 
-    // No record, then INSERT
-    if(count($values) == 0){
-        $sql = "INSERT INTO `book_table`(`author`, `book_name`, `cover_filename`) VALUES " .
-                                    "(:author , :book_name , :cover_filename)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(":author", $author, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-        $stmt->bindValue(":book_name", $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-        $stmt->bindValue(":cover_filename", $new_filename, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+// Record exists, then UPDATE
+// 如果說這本書已經存在了，就用Update更新
+else {
 
-        $status = $stmt->execute();
-
-        if ($status === false) {
-            //SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
-            $error = $stmt->errorInfo();
-            exit("SQL_ERROR: " . $error[2]);
-        }
+    if($new_filename == ""){
+        $new_filename = $values[0]["cover_filename"];
     }
 
-    // Record exists, then UPDATE
-    else {
-        $sql = "UPDATE `book_table` SET `cover_filename`=:cover_filename,`cover_layout`='' WHERE book_name=:book_name";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(":book_name", $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-        $stmt->bindValue(":cover_filename", $new_filename, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $sql = "UPDATE `book_table` SET `cover_filename`=:cover_filename,`cover_layout`=:cover_layout WHERE book_name=:book_name";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(":book_name", $group, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":cover_filename", $new_filename, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+    $stmt->bindValue(":cover_layout", $cover_layout, PDO::PARAM_STR);
 
-        $status = $stmt->execute();
+    $status = $stmt->execute();
 
-        if ($status === false) {
-            //SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
-            $error = $stmt->errorInfo();
-            exit("SQL_ERROR: " . $error[2]);
-        }
+    if ($status === false) {
+        //SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
+        $error = $stmt->errorInfo();
+        exit("SQL_ERROR: " . $error[2]);
     }
 }
 
